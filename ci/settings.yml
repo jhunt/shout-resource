@@ -1,0 +1,28 @@
+---
+# settings for the shout-resource pipeline
+meta:
+  target: sw
+  url:    https://pipes.starkandwayne.com
+  name:   shout-resource
+
+  initial_version: 1.1.0
+
+  aws:
+    access_key: (( vault "secret/aws/cfcommunity:access" ))
+    secret_key: (( vault "secret/aws/cfcommunity:secret" ))
+
+  dockerhub:
+    email:    (( vault "secret/dockerhub:email" ))
+    username: (( vault "secret/dockerhub:username" ))
+    password: (( vault "secret/dockerhub:password" ))
+    repository: huntprod/shout-resource
+
+  github:
+    owner: cloudfoundry-community
+    repo:  shout-resource
+    private_key:  (( vault "secret/pipelines/shout-resource/github:private" ))
+    access_token: (( vault "secret/pipelines/shout-resource/github:token" ))
+
+  slack:
+    webhook: (( vault "secret/pipelines/shout-resource/slack:webhook" ))
+    channel: '#botspam'

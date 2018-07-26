@@ -1,0 +1,68 @@
+#!/bin/bash
+set -e
+
+cd "${1}"
+exec 3>&1
+exec 1>&2
+
+PATH=/usr/local/bin:$PATH
+payload=$(mktemp /tmp/resource-in.XXXXXX)
+cat >$payload <&0
+endpoint=$(jq -r '.source.url'                      <$payload)
+skipvfy=$( jq -r '(.source.insecure // "false")'    <$payload)
+topic=$(   jq -r '(.params.topic // .source.topic)' <$payload | envsubst)
+message=$( jq -r '(.params.message)'                <$payload | envsubst)
+link=$(    jq -r '(.params.link // null)'           <$payload | envsubst)
+ok=$(      jq -r '.params.ok'                       <$payload)
+
+cat <<EOF
+
+
+   ######  ##     ##  #######  ##     ## ######## ####
+  ##    ## ##     ## ##     ## ##     ##    ##    ####
+  ##       ##     ## ##     ## ##     ##    ##    ####
+   ######  ######### ##     ## ##     ##    ##     ##
+        ## ##     ## ##     ## ##     ##    ##
+  ##    ## ##     ## ##     ## ##     ##    ##    ####
+   ######  ##     ##  #######   #######     ##    ####
+
+
+EOF
+
+echo "∎ checking current user identity..."
+id
+echo
+
+if command -v "update-ca-certificates" >/dev/null 2>&1; then
+  echo "∎ updating ca certificate store..."
+  mkdir -p /usr/local/share/ca-certificates
+  jq -r '.source.ca // ""' <$payload > /usr/local/share/ca-certificates/custom.pem
+  update-ca-certificates || true
+  echo
+fi
+
+curlopts=""
+if [[ "$skipvfy" == "true" ]]; then
+  echo "∎ skipping certificate verification..."
+  curlopts="-k"
+fi
+
+if [[ $link != "null" ]]; then
+  link='"'"$link"'"'
+fi
+
+body='{
+  "topic"   : "'$topic'",
+  "message" : "'$message'",
+  "ok"      : '$ok',
+  "link"    : '$link'
+}'
+
+echo "∎ sending event up to ${endpoint}/events..."
+printf "%s\n" "$body" | sed -e 's/^/  /'
+curl -Lsv $curlopts ${endpoint}/events --data-binary "$body" | jq -r .
+echo
+
+echo "∎ complete."
+
+echo '{"version":{"timestamp":"'$(date +%s)'"}}' >&3
