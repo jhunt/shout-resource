@@ -8,12 +8,14 @@ exec 1>&2
 PATH=/usr/local/bin:$PATH
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat >$payload <&0
-endpoint=$(jq -r '.source.url'                      <$payload)
-skipvfy=$( jq -r '(.source.insecure // "false")'    <$payload)
-topic=$(   jq -r '(.params.topic // .source.topic)' <$payload | envsubst)
-message=$( jq -r '(.params.message)'                <$payload | envsubst)
-link=$(    jq -r '(.params.link // null)'           <$payload | envsubst)
-ok=$(      jq -r '.params.ok'                       <$payload)
+endpoint=$(jq -r '.source.url'                                   <$payload)
+skipvfy=$( jq -r '(.source.insecure // "false")'                 <$payload)
+method=$(  jq -r '(.params.method // .source.method // "event")' <$payload)
+topic=$(   jq -r '(.params.topic // .source.topic)'              <$payload | envsubst)
+message=$( jq -r '(.params.message)'                             <$payload | envsubst)
+link=$(    jq -r '(.params.link // null)'                        <$payload | envsubst)
+ok=$(      jq -r '.params.ok'                                    <$payload)
+meta=$(    jq -r '(.params.metadata // {})'                      <$payload | envsubst)
 
 cat <<EOF
 
@@ -51,18 +53,41 @@ if [[ $link != "null" ]]; then
   link='"'"$link"'"'
 fi
 
-body='{
-  "topic"   : "'$topic'",
-  "message" : "'$message'",
-  "ok"      : '$ok',
-  "link"    : '$link'
+case $method in
+event*)
+  body='{
+  "topic"    : "'"$topic"'",
+  "message"  : "'"$message"'",
+  "ok"       : '"$ok"',
+  "link"     : '"$link"',
+  "metadata" : '"$meta"'
 }'
 
-echo "∎ sending event up to ${endpoint}/events..."
-printf "%s\n" "$body" | sed -e 's/^/  /'
-curl -Lsv $curlopts ${endpoint}/events --data-binary "$body" | jq -r .
-echo
+  echo "∎ sending event up to ${endpoint}/events..."
+  printf "%s\n" "$body" | sed -e 's/^/  /'
+  curl -Lsv $curlopts ${endpoint}/events --data-binary "$body" | jq -r .
+  echo
+  ;;
+
+announce*)
+  body='{
+  "topic"    : "'"$topic"'",
+  "message"  : "'"$message"'",
+  "link"     : '"$link"',
+  "metadata" : '"$meta"'
+}'
+
+  echo "∎ sending announcement up to ${endpoint}/announcements..."
+  printf "%s\n" "$body" | sed -e 's/^/  /'
+  curl -Lsv $curlopts ${endpoint}/announcements --data-binary "$body" | jq -r .
+  echo
+  ;;
+
+*)
+  echo "∎ invalid method '$method'..."
+  exit 1
+  ;;
+esac
 
 echo "∎ complete."
-
 echo '{"version":{"timestamp":"'$(date +%s)'"}}' >&3
