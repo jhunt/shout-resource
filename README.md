@@ -29,6 +29,13 @@ Source Configuration
     If not specified here, this _must_ be specified in the `out`
     parameters.
 
+  - `method`: _Optional_.  How to notify via Shout!.  If given,
+    must be one of "event", for break/fix notifications, or
+    "announce" for always-sent announcements.
+
+    If not specified here, this _must_ be specified in the `out`
+    parameters.
+
   - `ca`: _Optional_.  A concatenated list of X.509 Certificate
     Authority certificates, PEM-encoded.
 
@@ -63,6 +70,12 @@ a new event, either successful or otherwise.
   - `topic`: _Optional_.  The Shout! topic to post events to.
     This must be specified if you have not defined a topic at the
     source level (see above).
+
+  - `method`: _Optional_.  How to notify via Shout!.  Must be one
+    of "event", for break/fix notifications, or "announce" for
+    always-sent announcements.
+
+    Defaults to "event".
 
   - `message`: _Required_ (but see `file`).  The message text to
     send out.
