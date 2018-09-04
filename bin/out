@@ -9,6 +9,8 @@ PATH=/usr/local/bin:$PATH
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat >$payload <&0
 endpoint=$(jq -r '.source.url'                                   <$payload)
+username=$(jq -r '.source.username'                              <$payload)
+password=$(jq -r '.source.password'                              <$payload)
 skipvfy=$( jq -r '(.source.insecure // "false")'                 <$payload)
 method=$(  jq -r '(.params.method // .source.method // "event")' <$payload)
 topic=$(   jq -r '(.params.topic // .source.topic)'              <$payload | envsubst)
@@ -44,10 +46,10 @@ if command -v "update-ca-certificates" >/dev/null 2>&1; then
   echo
 fi
 
-curlopts=""
+curlopts="-u \"$username:$password\""
 if [[ "$skipvfy" == "true" ]]; then
   echo "∎ skipping certificate verification..."
-  curlopts="-k"
+  curlopts=" -k"
 fi
 
 if [[ $link != "null" ]]; then

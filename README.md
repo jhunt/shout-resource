@@ -25,6 +25,12 @@ Source Configuration
   - `url`: _Required_. The full URL (HTTPS or otherwise) of your
     [Shout!][shout] API server.
 
+  - `username`: _Required_.  The username of the Shout! operations
+    user, required to post events and announcements.
+
+  - `password`: _Required_.  The password of the Shout! operations
+    user, required to post events and announcements
+
   - `topic`: _Optional_.  The Shout! topic to post events to.
     If not specified here, this _must_ be specified in the `out`
     parameters.
