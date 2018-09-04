@@ -12,6 +12,7 @@ endpoint=$(jq -r '.source.url'                                   <$payload)
 skipvfy=$( jq -r '(.source.insecure // "false")'                 <$payload)
 method=$(  jq -r '(.params.method // .source.method // "event")' <$payload)
 topic=$(   jq -r '(.params.topic // .source.topic)'              <$payload | envsubst)
+file=$(    jq -r '(.params.file // null)'                        <$payload)
 message=$( jq -r '(.params.message)'                             <$payload | envsubst)
 link=$(    jq -r '(.params.link // null)'                        <$payload | envsubst)
 ok=$(      jq -r '.params.ok'                                    <$payload)
@@ -51,6 +52,10 @@ fi
 
 if [[ $link != "null" ]]; then
   link='"'"$link"'"'
+fi
+
+if [[ $file != "null" ]] then
+  message=$(cat $file | envsubst)
 fi
 
 case $method in

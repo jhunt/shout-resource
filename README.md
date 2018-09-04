@@ -63,17 +63,24 @@ a new event, either successful or otherwise.
   - `topic`: _Optional_.  The Shout! topic to post events to.
     This must be specified if you have not defined a topic at the
     source level (see above).
-  
-  - `message`: _Required_.  The message text to send out.
-  
+
+  - `message`: _Required_ (but see `file`).  The message text to
+    send out.
+
+  - `file`: _Optional_.  A file path that contains the message
+    text to send out.  If `file` is given, `message` is ignored
+    (and no longer required).
+
   - `link`: _Optional_.  A URL to be included in the failure /
     success notification messages.
-  
+
   - `ok`: _Optional_.  Whether or not this event is a successful one
     (`"ok": true`), or a failure (`"ok": false`).  This governs how
     Shout! will react to the event, given the topic's recent
     history.
 
+  - `metadata`: _Optional_.  A key-value map of metadata, which
+    can be used by Shout! rules for a richer messaging experience.
 
 
 [shout]: https://github.com/jhunt/shout
