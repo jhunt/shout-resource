@@ -46,7 +46,7 @@ if command -v "update-ca-certificates" >/dev/null 2>&1; then
   echo
 fi
 
-curlopts="-u \"$username:$password\""
+curlopts="-u $username:$password"
 if [[ "$skipvfy" == "true" ]]; then
   echo "∎ skipping certificate verification..."
   curlopts=" -k"
