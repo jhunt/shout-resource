@@ -56,7 +56,7 @@ if [[ $link != "null" ]]; then
   link='"'"$link"'"'
 fi
 
-if [[ $file != "null" ]] then
+if [[ $file != "null" ]]; then
   message=$(cat $file | envsubst)
 fi
 
